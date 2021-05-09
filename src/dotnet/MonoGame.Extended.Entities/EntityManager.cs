@@ -18,7 +18,6 @@ namespace MonoGame.Extended.Entities
             _componentManager = componentManager;
             _addedEntities = new Bag<int>(_defaultBagSize);
             _removedEntities = new Bag<int>(_defaultBagSize);
-            _changedEntities = new Bag<int>(_defaultBagSize);
             _entityToComponentBits = new Bag<BitVector32>(_defaultBagSize);
             _componentManager.ComponentsChanged += OnComponentsChanged;
 
@@ -37,7 +36,6 @@ namespace MonoGame.Extended.Entities
         private readonly Pool<Entity> _entityPool;
         private readonly Bag<int> _addedEntities;
         private readonly Bag<int> _removedEntities;
-        private readonly Bag<int> _changedEntities;
         private readonly Bag<BitVector32> _entityToComponentBits;
 
         public event Action<int> EntityAdded;
@@ -78,7 +76,6 @@ namespace MonoGame.Extended.Entities
 
         private void OnComponentsChanged(int entityId)
         {
-            _changedEntities.Add(entityId);
             _entityToComponentBits[entityId] = _componentManager.CreateComponentBits(entityId);
             EntityChanged?.Invoke(entityId);
         }
@@ -90,12 +87,6 @@ namespace MonoGame.Extended.Entities
                 _entityToComponentBits[entityId] = _componentManager.CreateComponentBits(entityId);
                 ActiveCount++;
                 EntityAdded?.Invoke(entityId);
-            }
-
-            foreach (var entityId in _changedEntities)
-            {
-                _entityToComponentBits[entityId] = _componentManager.CreateComponentBits(entityId);
-                EntityChanged?.Invoke(entityId);
             }
 
             foreach (var entityId in _removedEntities)
@@ -114,7 +105,6 @@ namespace MonoGame.Extended.Entities
 
             _addedEntities.Clear();
             _removedEntities.Clear();
-            _changedEntities.Clear();
         }
     }
 }
